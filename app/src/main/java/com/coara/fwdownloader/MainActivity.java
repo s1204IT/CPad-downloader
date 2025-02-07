@@ -401,6 +401,11 @@ private void initApp() {
 
     // ログイン処理
     private void doLogin(String memberId, String password) {
+    if (memberId == null || memberId.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, "ログイン失敗：入力が不正です", Toast.LENGTH_SHORT).show());
+        return;
+    }
+
     new Thread(() -> {
         HttpURLConnection conn = null;
         try {
@@ -430,7 +435,7 @@ private void initApp() {
                 });
                 dumpCookies();
                 getAkamaiToken();
-                saveLoginInfo(memberId, password); // ログイン成功時に情報を保存
+                saveLoginInfo(memberId, password);
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "ログイン失敗：認証情報が正しくありません", Toast.LENGTH_SHORT).show());
             }
