@@ -406,6 +406,15 @@ private void initApp() {
         return;
     }
 
+    if (memberId.length() != 10) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, "会員番号は10桁で入力してください", Toast.LENGTH_SHORT).show());
+        return;
+    }
+    if (password.length() < 8 || password.length() > 16) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, "パスワードは8～16文字で入力してください", Toast.LENGTH_SHORT).show());
+        return;
+    }
+
     new Thread(() -> {
         HttpURLConnection conn = null;
         try {
@@ -414,33 +423,48 @@ private void initApp() {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setDoOutput(true);
+
             String postData = "usr_name=" + URLEncoder.encode(memberId, "UTF-8") +
                               "&usr_password=" + URLEncoder.encode(password, "UTF-8");
             byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
             conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(postDataBytes);
                 os.flush();
             }
+
             int responseCode = conn.getResponseCode();
             String responseBody = (responseCode == HttpURLConnection.HTTP_OK)
                     ? readStream(conn.getInputStream()) : readStream(conn.getErrorStream());
 
             CookieManager cm = (CookieManager) CookieHandler.getDefault();
             if (responseCode == HttpURLConnection.HTTP_OK && !cm.getCookieStore().getCookies().isEmpty()) {
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity.this, "ログイン成功", Toast.LENGTH_SHORT).show();
-                    loginLayout.setVisibility(View.GONE);
-                    mainLayout.setVisibility(View.VISIBLE);
-                });
-                dumpCookies();
                 getAkamaiToken();
-                saveLoginInfo(memberId, password);
+
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (akamaiToken != null && !akamaiToken.isEmpty()) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
+                            loginLayout.setVisibility(View.GONE);
+                            mainLayout.setVisibility(View.VISIBLE);
+                        });
+                        saveLoginInfo(memberId, password);
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this, "ログイン失敗：Akamai Token を取得できませんでした", Toast.LENGTH_SHORT).show());
+                    }
+                }).start();
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "ログイン失敗：認証情報が正しくありません", Toast.LENGTH_SHORT).show());
             }
         } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "ネットワークエラー", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "ネットワー接続クエラー", Toast.LENGTH_SHORT).show());
         } finally {
             if (conn != null) conn.disconnect();
         }
