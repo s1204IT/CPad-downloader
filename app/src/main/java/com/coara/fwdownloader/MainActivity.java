@@ -374,11 +374,11 @@ public class MainActivity extends Activity {
             String memberId = reader.readLine();
             String password = reader.readLine();
             if (memberId != null && password != null) {
-                memberId = memberId.trim();
-                password = password.trim();
+                final String finalMemberId = memberId.trim();
+                final String finalPassword = password.trim();
                 handler.post(() -> {
-                    memberIdInput.setText(memberId);
-                    passwordInput.setText(password);
+                    memberIdInput.setText(finalMemberId);
+                    passwordInput.setText(finalPassword);
                 });
                 return true;
             }
