@@ -285,6 +285,7 @@ public class MainActivity extends Activity {
             ListView firmwareListView = findViewById(R.id.firmwareListView);
             if (firmwareListView != null && firmwareListView.getAdapter() != null) {
                 if (firmwareListView.getAdapter() instanceof ArrayAdapter<?>) {
+                    @SuppressWarnings("unchecked")
                     ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
                     adapter.clear();
                     adapter.notifyDataSetChanged();
@@ -292,6 +293,7 @@ public class MainActivity extends Activity {
             }
         });
     }
+
 
     private void doLogin(String memberId, String password) {
         if (memberId == null || memberId.trim().isEmpty() || password == null || password.trim().isEmpty()) {
