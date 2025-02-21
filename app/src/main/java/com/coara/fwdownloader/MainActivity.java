@@ -763,8 +763,9 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, "全ファーム一覧統合中にエラーが発生しました", Toast.LENGTH_SHORT).show());
             Log.e(TAG, "fetchAndMergeAllFirmwareLists 内でエラー", e);
-        }
-    }
+         }
+    }).start();
+}
 
 private void proceedWithRelA7BCombination() {
     new Thread(new Runnable() {
