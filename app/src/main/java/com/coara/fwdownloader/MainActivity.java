@@ -281,14 +281,14 @@ public class MainActivity extends Activity {
     }
 
     private void clearListView() {
-        handler.post(() -> {
+        
+        runOnUiThread(() -> {
             ListView firmwareListView = findViewById(R.id.firmwareListView);
-            if (firmwareListView != null && firmwareListView.getAdapter() != null) {
-                if (firmwareListView.getAdapter() instanceof ArrayAdapter<?>) {
-                    @SuppressWarnings("unchecked")
-                    ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
-                    adapter.clear();
-                    adapter.notifyDataSetChanged();
+            if (firmwareListView != null) {
+                ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
+                if (adapter != null) {
+                    adapter.clear(); 
+                    adapter.notifyDataSetChanged(); 
                 }
             }
         });
@@ -359,33 +359,32 @@ public class MainActivity extends Activity {
     }
 
     private void saveLoginInfo(String memberId, String password) {
-        try (FileOutputStream fos = openFileOutput("login.txt", MODE_PRIVATE);
-             OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
-            writer.write(memberId + "\n" + password);
-        } catch (IOException e) {
-            e.printStackTrace();
+    try (FileOutputStream fos = openFileOutput("login.txt", MODE_PRIVATE);
+         OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
+        writer.write(memberId + "\n" + password);
+    } catch (IOException e) {
+        e.printStackTrace();
+     }
+ }
+ 
+ private boolean loadLoginInfo() {
+    try (FileInputStream fis = openFileInput("login.txt");
+         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+         BufferedReader reader = new BufferedReader(isr)) {
+        String memberId = reader.readLine();
+        String password = reader.readLine();
+        if (memberId != null && password != null) {
+            runOnUiThread(() -> {
+                memberIdInput.setText(memberId);
+                passwordInput.setText(password);
+            });
+            return true; 
         }
+    } catch (IOException e) {
+        
     }
-
-    private boolean loadLoginInfo() {
-        try (FileInputStream fis = openFileInput("login.txt");
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-            String memberId = reader.readLine();
-            String password = reader.readLine();
-            if (memberId != null && password != null) {
-                final String finalMemberId = memberId.trim();
-                final String finalPassword = password.trim();
-                handler.post(() -> {
-                    memberIdInput.setText(finalMemberId);
-                    passwordInput.setText(finalPassword);
-                });
-                return true;
-            }
-        } catch (IOException e) {
-        }
-        return false;
-    }
+    return false;
+  }
 
     private void getAkamaiToken() {
         executor.execute(() -> {
