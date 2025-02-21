@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
