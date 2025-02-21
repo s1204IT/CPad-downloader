@@ -13,7 +13,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- ログイン用レイアウト -->
         <LinearLayout
             android:id="@+id/loginLayout"
             android:layout_width="match_parent"
@@ -41,7 +40,6 @@
                 android:text="@string/login" />
         </LinearLayout>
 
-        <!-- メイン用レイアウト（ログイン成功後に表示） -->
         <LinearLayout
             android:id="@+id/mainLayout"
             android:layout_width="match_parent"
@@ -50,7 +48,7 @@
             android:visibility="gone"
             android:layout_marginTop="16dp">
 
-            <!-- 新方式：ファームウェア選択ボタン -->
+
             <Button
                 android:id="@+id/firmwareSelectionButton"
                 android:layout_width="match_parent"
@@ -58,7 +56,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/select_fw" />
 
-            <!-- 【追加】APKファイル選択ボタン（ファームウェア選択ボタンの下） -->
+        
             <Button
                 android:id="@+id/apkSelectionButton"
                 android:layout_width="match_parent"
@@ -66,7 +64,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/select_apk" />
 
-            <!-- ファーム一覧表示用 ListView -->
+    
             <ListView
                 android:id="@+id/firmwareListView"
                 android:layout_width="match_parent"
@@ -75,7 +73,7 @@
                 android:divider="@android:color/darker_gray"
                 android:dividerHeight="1dp" />
 
-            <!-- ダウンロードボタン -->
+        
             <Button
                 android:id="@+id/downloadButton"
                 android:layout_width="match_parent"
@@ -83,7 +81,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/download" />
 
-            <!-- ZIP・TXTボタンを横並びで配置 -->
+    
             <LinearLayout
                 android:id="@+id/zipTxtRow"
                 android:layout_width="match_parent"
