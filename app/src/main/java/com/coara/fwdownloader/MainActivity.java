@@ -380,6 +380,8 @@ public class MainActivity extends Activity {
     } catch (IOException e) {
         e.printStackTrace();
     }
+    return false;
+}
 
     private void getAkamaiToken() {
         executor.execute(() -> {
