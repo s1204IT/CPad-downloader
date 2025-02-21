@@ -284,7 +284,7 @@ public class MainActivity extends Activity {
         handler.post(() -> {
             ListView firmwareListView = findViewById(R.id.firmwareListView);
             if (firmwareListView != null && firmwareListView.getAdapter() != null) {
-                if (firmwareListView.getAdapter() instanceof ArrayAdapter) {
+                if (firmwareListView.getAdapter() instanceof ArrayAdapter<?>) {
                     ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
                     adapter.clear();
                     adapter.notifyDataSetChanged();
