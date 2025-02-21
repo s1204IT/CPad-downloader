@@ -85,10 +85,15 @@ public class MainActivity extends Activity {
     private static final String PREFS_NAME = "MyPrefs";
     private static final String KEY_PERMISSION_SHOWN = "permission_shown";
     private int selectedOptionIndex = -1;
+
+    // ログイン用、メイン用レイアウト
     private View loginLayout;
     private View mainLayout;
+
+    // ログイン用 UI
     private EditText memberIdInput, passwordInput;
     private Button loginButton;
+
     private Button downloadButton;
     private Button firmwareSelectionButton;
     private Button switchExecuteButton;
@@ -168,11 +173,11 @@ public class MainActivity extends Activity {
         Button zipButton = findViewById(R.id.zipButton);
         Button txtButton = findViewById(R.id.txtButton);
 
-
+    
         loginLayout.setVisibility(View.VISIBLE);
         mainLayout.setVisibility(View.GONE);
 
-
+    
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,13 +207,13 @@ public class MainActivity extends Activity {
             }
         });
 
-
+    
         firmwareListView.setOnItemClickListener((parent, view, position, id) -> {
             selectedFirmwareInfo = firmwareList.get(position);
             Toast.makeText(MainActivity.this, "選択: " + selectedFirmwareInfo, Toast.LENGTH_SHORT).show();
          });
 
-    
+        
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -277,7 +282,7 @@ public class MainActivity extends Activity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("選択してください");
-        
+    
         builder.setSingleChoiceItems(optionNames, selectedOptionIndex, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -298,11 +303,13 @@ public class MainActivity extends Activity {
 
                 Toast.makeText(MainActivity.this, "切り替えました", Toast.LENGTH_SHORT).show();
 
+                
                 final ListView firmwareListView = findViewById(R.id.firmwareListView);
                 if (firmwareListView != null) {
                     firmwareListView.setEnabled(false);
                 }
 
+            
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -322,7 +329,7 @@ public class MainActivity extends Activity {
     private void fetchFirmwareList2(String akamaiType, String akamaiTable, String akamaiListParam, String akamaiInfo) {
         new Thread(() -> {
             try {
-                
+            
                 firmwareBaseUrl = "https://townak.benesse.ne.jp/" + akamaiType + "/" + akamaiTable + "/sp_84";
                 String firmwareXmlUrl = firmwareBaseUrl + "/authorized/list/200" + akamaiListParam +
                     "/deliveryInfo_APL000" + akamaiInfo + ".xml";
@@ -339,15 +346,14 @@ public class MainActivity extends Activity {
                     conn.setRequestProperty("Cookie", "town_akamai_token=" + akamaiToken);
                 }
 
-            
+        
                 byte[] xmlBytes = readAllBytes(conn.getInputStream());
                 String utf8Content = new String(xmlBytes, StandardCharsets.UTF_8);
                 Log.d("FirmwareFetch", "Firmware XML: " + utf8Content);
 
-                
+            
                 List<String> list = parseFirmwareXml(utf8Content);
 
-            
                 runOnUiThread(() -> {
                     synchronized (firmwareList) {
                         firmwareList.clear();
@@ -363,7 +369,6 @@ public class MainActivity extends Activity {
     }
 
     private void clearListView() {
-        
         runOnUiThread(() -> {
             ListView firmwareListView = findViewById(R.id.firmwareListView);
             if (firmwareListView != null) {
@@ -471,7 +476,6 @@ public class MainActivity extends Activity {
             return true; 
         }
     } catch (IOException e) {
-        
     }
     return false;
 }
@@ -628,143 +632,114 @@ public class MainActivity extends Activity {
 }
  
    private void fetchAndMergeAllFirmwareLists() {
-    new Thread(() -> {
-        try {
-            
-            File externalDir = new File(Environment.getExternalStorageDirectory(), "xml");
-            if (!externalDir.exists()) {
-                boolean created = externalDir.mkdirs();
-                if (!created) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "保存先ディレクトリの作成に失敗しました", Toast.LENGTH_SHORT).show());
-                    return;
-                }
-            }
-            File outFile = new File(externalDir, "allfwlist.xml");
-
-    
-            if (outFile.exists()) {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "allfwlist.xmlが既に存在するため、保存処理をスキップしました", Toast.LENGTH_SHORT).show());
-                proceedWithRelA7BCombination();
+    try {
+        
+        File externalDir = new File(Environment.getExternalStorageDirectory(), "xml");
+        if (!externalDir.exists()) {
+            boolean created = externalDir.mkdirs();
+            if (!created) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "保存先ディレクトリの作成に失敗しました", Toast.LENGTH_SHORT).show());
                 return;
             }
+        }
+
+        File outFile = new File(externalDir, "allfwlist.xml");
 
         
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder mainBuilder = factory.newDocumentBuilder();
-            Document mergedDoc = mainBuilder.newDocument();
-            Element root = mergedDoc.createElement("allDeliveryInfo");
-            mergedDoc.appendChild(root);
-
-    
-            String[] akamaiTypes = {"rel", "rel2", "test", "test2", "test3", "test4"};
-            String[] tables = {"A", "B"};
-            String[] listParams = {"2", "3", "4", "5", "6", "7", "8", "9"};
-            String[] infoArray = {"A", "B", "C", "D", "H"};
+        if (outFile.exists()) {
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "allfwlist.xmlが既に存在するため、保存処理をスキップしました", Toast.LENGTH_SHORT).show());
+            proceedWithRelA7BCombination(); 
+            return;
+        }
 
         
-            List<String> urlList = new ArrayList<>();
-            for (String table : tables) {
-                for (String type : akamaiTypes) {
-                    String baseUrl = "https://townak.benesse.ne.jp/" + type + "/" + table + "/sp_84";
-                    for (String listParam : listParams) {
-                        for (String info : infoArray) {
-                            String urlStr = baseUrl + "/authorized/list/200" + listParam +
-                                    "/deliveryInfo_APL000" + info + ".xml";
-                            urlList.add(urlStr);
-                        }
-                    }
-                }
-            }
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        final Document mergedDoc = builder.newDocument();
+        Element root = mergedDoc.createElement("allDeliveryInfo");
+        mergedDoc.appendChild(root);
+
+
+        String[] akamaiTypes = {"rel", "rel2", "test", "test2", "test3", "test4"};
+        String[] tables = {"A", "B"};
+        String[] listParams = {"2", "3", "4", "5", "6", "7", "8", "9"};
+        String[] infoArray = {"A", "B", "C", "D", "H"};
 
         
-            ExecutorService executor = Executors.newFixedThreadPool(10);
+        for (String table : tables) {
+            ExecutorService executor = Executors.newFixedThreadPool(5);
             List<Future<Void>> futures = new ArrayList<>();
+            for (String type : akamaiTypes) {
+                String baseUrl = "https://townak.benesse.ne.jp/" + type + "/" + table + "/sp_84";
+                for (String listParam : listParams) {
+                    for (String info : infoArray) {
+                        final String xmlUrlStr = baseUrl + "/authorized/list/200" + listParam +
+                                "/deliveryInfo_APL000" + info + ".xml";
+                        futures.add(executor.submit(new Callable<Void>() {
+                            @Override
+                            public Void call() {
+                                try {
+                                    URL url = new URL(xmlUrlStr);
+                                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                                    conn.setRequestMethod("GET");
+                                    conn.setRequestProperty("Content-Type", "application/xml");
+                                    if (akamaiToken != null && !akamaiToken.isEmpty()) {
+                                        conn.setRequestProperty("Cookie", "town_akamai_token=" + akamaiToken);
+                                    }
+                                    byte[] xmlBytes = readAllBytes(conn.getInputStream());
+                                    String isoContent = new String(xmlBytes, "UTF-8");
+                                    String utf8Content = new String(isoContent.getBytes("UTF-8"), "UTF-8");
 
-            
-            for (final String xmlUrlStr : urlList) {
-                futures.add(executor.submit(() -> {
-                    HttpURLConnection conn = null;
-                    try {
-                        URL url = new URL(xmlUrlStr);
-                        conn = (HttpURLConnection) url.openConnection();
-                        conn.setConnectTimeout(15000); 
-                        conn.setReadTimeout(15000);    
-                        conn.setRequestMethod("GET");
-                        conn.setRequestProperty("Content-Type", "application/xml");
-                        if (akamaiToken != null && !akamaiToken.isEmpty()) {
-                            conn.setRequestProperty("Cookie", "town_akamai_token=" + akamaiToken);
-                        }
-
-                        int responseCode = conn.getResponseCode();
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            byte[] xmlBytes = readAllBytes(conn.getInputStream());
-                            String xmlContent = new String(xmlBytes, StandardCharsets.UTF_8);
-
-                            
-                            DocumentBuilder localBuilder = factory.newDocumentBuilder();
-                            Document doc = localBuilder.parse(new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8)));
-
-                    
-                            NodeList appNodes = doc.getElementsByTagName("application");
-                            synchronized (mergedDoc) {
-                                for (int i = 0; i < appNodes.getLength(); i++) {
-                                    Node node = appNodes.item(i);
-                                    Node importedNode = mergedDoc.importNode(node, true);
-                                    root.appendChild(importedNode);
+                                
+                                    Document doc = builder.parse(new ByteArrayInputStream(utf8Content.getBytes("UTF-8")));
+                                    NodeList appNodes = doc.getElementsByTagName("application");
+                                    synchronized (mergedDoc) {
+                                        for (int i = 0; i < appNodes.getLength(); i++) {
+                                            Node node = appNodes.item(i);
+                                            Node importedNode = mergedDoc.importNode(node, true);
+                                            root.appendChild(importedNode);
+                                        }
+                                    }
+                                    conn.disconnect();
+                                } catch (Exception e) {
+                                  
                                 }
+                                return null;
                             }
-                        } else {
-                            Log.e(TAG, "HTTPエラー " + responseCode + " for URL: " + xmlUrlStr);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "XML取得中にエラー: " + xmlUrlStr, e);
-                    } finally {
-                        if (conn != null) {
-                            conn.disconnect();
-                        }
+                        }));
                     }
-                    return null;
-                }));
-            }
-
-        
-            executor.shutdown();
-            if (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
-                executor.shutdownNow();
-            }
-
-            
-            for (Future<Void> future : futures) {
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    Log.e(TAG, "タスク実行中に例外", e);
                 }
             }
+            executor.shutdown();
+            try {
+                executor.awaitTermination(5, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+             
+            }
+        }
+
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(mergedDoc), new StreamResult(writer));
+        String mergedXmlString = writer.toString();
 
         
-            TransformerFactory tf = TransformerFactory.newInstance();
-            Transformer transformer = tf.newTransformer();
-            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(mergedDoc), new StreamResult(writer));
-            String mergedXmlString = writer.toString();
+        try (FileOutputStream fos = new FileOutputStream(outFile)) {
+            fos.write(mergedXmlString.getBytes("UTF-8"));
+            fos.flush();
+        }
 
-            
-            try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                fos.write(mergedXmlString.getBytes(StandardCharsets.UTF_8));
-                fos.flush();
-            }
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, "全ファーム一覧を保存しました：" + outFile.getAbsolutePath(), Toast.LENGTH_SHORT).show());
 
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "全ファーム一覧を保存しました: " + outFile.getAbsolutePath(), Toast.LENGTH_SHORT).show());
-            proceedWithRelA7BCombination();
+        
+        proceedWithRelA7BCombination();
 
-        } catch (Exception e) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "全ファーム一覧統合中にエラーが発生しました", Toast.LENGTH_SHORT).show());
-            Log.e(TAG, "fetchAndMergeAllFirmwareLists 内でエラー", e);
-         }
-    }).start();
+    } catch (Exception e) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, "全ファーム一覧統合中にエラー", Toast.LENGTH_SHORT).show());
+    }
 }
 
 private void proceedWithRelA7BCombination() {
@@ -838,6 +813,7 @@ private void proceedWithRelA7BCombination() {
         }
     });
 
+
     ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, firmwareList) {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -884,7 +860,6 @@ private List<Integer> extractNumbers(String version) {
         try {
             numbers.add(Integer.parseInt(matcher.group(1)));
         } catch (NumberFormatException e) {
-            // 変換に失敗した場合は無視
         }
     }
     return numbers;
@@ -1019,7 +994,7 @@ private List<Integer> extractNumbers(String version) {
             @Override
             public void run() {
                 try {
-                
+                    
                     File inFile = new File(Environment.getExternalStorageDirectory(), "xml/allfwlist.xml");
                     if (!inFile.exists()) {
                         runOnUiThread(() -> Toast.makeText(MainActivity.this, "allfwlist.xml が存在しません", Toast.LENGTH_SHORT).show());
