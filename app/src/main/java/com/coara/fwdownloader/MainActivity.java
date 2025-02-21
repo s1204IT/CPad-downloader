@@ -282,10 +282,13 @@ public class MainActivity extends Activity {
 
     private void clearListView() {
         handler.post(() -> {
+            ListView firmwareListView = findViewById(R.id.firmwareListView);
             if (firmwareListView != null && firmwareListView.getAdapter() != null) {
-                ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
-                adapter.clear();
-                adapter.notifyDataSetChanged();
+                if (firmwareListView.getAdapter() instanceof ArrayAdapter) {
+                    ArrayAdapter<String> adapter = (ArrayAdapter<String>) firmwareListView.getAdapter();
+                    adapter.clear();
+                    adapter.notifyDataSetChanged();
+                }
             }
         });
     }
