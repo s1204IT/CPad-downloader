@@ -8,7 +8,7 @@
 
 -keepattributes Signature,RuntimeVisibleAnnotations,AnnotationDefault
 
-
+-optimizationpasses 8
 -optimizations !code/simplification/arithmetic
 
 -repackageclasses ''
