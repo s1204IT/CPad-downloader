@@ -363,21 +363,22 @@ public class MainActivity extends Activity {
     }
 
     private boolean loadLoginInfo() {
-        try (FileInputStream fis = openFileInput("login.txt");
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-            String memberId = reader.readLine();
-            String password = reader.readLine();
-            if (memberId != null && password != null) {
-                handler.post(() -> {
-                    memberIdInput.setText(memberId);
-                    passwordInput.setText(password);
-                });
-                return true;
-            }
-        } catch (IOException e) {
+    try (FileInputStream fis = openFileInput("login.txt");
+         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+         BufferedReader reader = new BufferedReader(isr)) {
+        String memberId = reader.readLine();
+        String password = reader.readLine();
+        if (memberId != null && password != null) {
+            memberId = memberId.trim();
+            password = password.trim();
+            runOnUiThread(() -> {
+                memberIdInput.setText(memberId);
+                passwordInput.setText(password);
+            });
+            return true; 
         }
-        return false;
+    } catch (IOException e) {
+        e.printStackTrace();
     }
 
     private void getAkamaiToken() {
