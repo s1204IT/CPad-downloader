@@ -337,10 +337,15 @@ public class MainActivity extends Activity {
                         }
                         if (!akamaiToken.isEmpty()) {
                             handler.post(() -> {
-                                Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
-                                loginLayout.setVisibility(View.GONE);
-                                mainLayout.setVisibility(View.VISIBLE);
-                            });
+                            Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
+                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                            View currentFocus = getCurrentFocus();
+                            if (currentFocus != null) {
+                            imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+                            }
+                            loginLayout.setVisibility(View.GONE);
+                            mainLayout.setVisibility(View.VISIBLE);
+                         });
                             saveLoginInfo(memberId, password);
                         } else {
                             handler.post(() -> Toast.makeText(MainActivity.this, "ログイン失敗：Akamai Token を取得できませんでした", Toast.LENGTH_SHORT).show());
