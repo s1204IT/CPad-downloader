@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -310,58 +311,58 @@ public class MainActivity extends Activity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("https://loginc.benesse.ne.jp/d/login");
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setDoOutput(true);
-                String postData = "usr_name=" + URLEncoder.encode(memberId, "UTF-8") +
-                        "&usr_password=" + URLEncoder.encode(password, "UTF-8");
-                byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
-                conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(postDataBytes);
-                    os.flush();
-                }
-                int responseCode = conn.getResponseCode();
-                String responseBody = (responseCode == HttpURLConnection.HTTP_OK)
-                        ? readStream(conn.getInputStream()) : readStream(conn.getErrorStream());
-                CookieManager cm = (CookieManager) CookieHandler.getDefault();
-                if (responseCode == HttpURLConnection.HTTP_OK && !cm.getCookieStore().getCookies().isEmpty()) {
-                    getAkamaiToken();
-                    executor.execute(() -> {
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        if (!akamaiToken.isEmpty()) {
-                            handler.post(() -> {
-                            Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
-                            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                            View currentFocus = getCurrentFocus();
-                            if (currentFocus != null) {
-                            imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
-                            }
-                            loginLayout.setVisibility(View.GONE);
-                            mainLayout.setVisibility(View.VISIBLE);
-                         });
-                            saveLoginInfo(memberId, password);
-                        } else {
-                            handler.post(() -> Toast.makeText(MainActivity.this, "ログイン失敗：Akamai Token を取得できませんでした", Toast.LENGTH_SHORT).show());
-                        }
-                    });
-                } else {
-                    handler.post(() -> Toast.makeText(MainActivity.this, "ログイン失敗：認証情報が正しくありません", Toast.LENGTH_SHORT).show());
-                }
-            } catch (Exception e) {
-                handler.post(() -> Toast.makeText(MainActivity.this, "ネットワーク接続エラー", Toast.LENGTH_SHORT).show());
-            } finally {
-                if (conn != null) conn.disconnect();
+    URL url = new URL("https://loginc.benesse.ne.jp/d/login");
+    conn = (HttpURLConnection) url.openConnection();
+    conn.setRequestMethod("POST");
+    conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+    conn.setDoOutput(true);
+    String postData = "usr_name=" + URLEncoder.encode(memberId, "UTF-8") +
+            "&usr_password=" + URLEncoder.encode(password, "UTF-8");
+    byte[] postDataBytes = postData.getBytes(StandardCharsets.UTF_8);
+    conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+    try (OutputStream os = conn.getOutputStream()) {
+        os.write(postDataBytes);
+        os.flush();
+    }
+    int responseCode = conn.getResponseCode();
+    String responseBody = (responseCode == HttpURLConnection.HTTP_OK)
+            ? readStream(conn.getInputStream()) : readStream(conn.getErrorStream());
+    CookieManager cm = (CookieManager) CookieHandler.getDefault();
+    if (responseCode == HttpURLConnection.HTTP_OK && !cm.getCookieStore().getCookies().isEmpty()) {
+        getAkamaiToken();
+        executor.execute(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (!akamaiToken.isEmpty()) {
+                handler.post(() -> {
+                    Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
+                    InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    View currentFocus = MainActivity.this.getCurrentFocus();
+                    if (currentFocus != null) {
+                        imm.hideSoftInputFromWindow(currentFocus.getWindowToken(), 0);
+                    }
+                    
+                    loginLayout.setVisibility(View.GONE);
+                    mainLayout.setVisibility(View.VISIBLE);
+                });
+                saveLoginInfo(memberId, password);
+            } else {
+                handler.post(() -> Toast.makeText(MainActivity.this, "ログイン失敗：Akamai Token を取得できませんでした", Toast.LENGTH_SHORT).show());
+            }
+        });
+    } else {
+                  handler.post(() -> Toast.makeText(MainActivity.this, "ログイン失敗：認証情報が正しくありません", Toast.LENGTH_SHORT).show());
+              }
+                 } catch (Exception e) {
+                   handler.post(() -> Toast.makeText(MainActivity.this, "ネットワーク接続エラー", Toast.LENGTH_SHORT).show());
+                 } finally {
+               if (conn != null) conn.disconnect();
             }
         });
     }
-
     private void saveLoginInfo(String memberId, String password) {
     try (FileOutputStream fos = openFileOutput("login.txt", MODE_PRIVATE);
          OutputStreamWriter writer = new OutputStreamWriter(fos, StandardCharsets.UTF_8)) {
