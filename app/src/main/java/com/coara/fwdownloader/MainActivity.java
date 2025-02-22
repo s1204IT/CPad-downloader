@@ -338,9 +338,9 @@ public class MainActivity extends Activity {
             }
             if (!akamaiToken.isEmpty()) {
                 handler.post(() -> {
-  　　　　　　　  Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
-    　　　　　　　InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-    　　　　　　　View view = MainActivity.this.getCurrentFocus();
+                    Toast.makeText(MainActivity.this, "ログインに成功しました", Toast.LENGTH_SHORT).show();
+                    InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    View view = MainActivity.this.getCurrentFocus();
    　　　　　　　 if (view == null) {
       　　　　　  view = loginLayout;
   　　　　　　　  }
