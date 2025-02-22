@@ -345,7 +345,6 @@ public class MainActivity extends Activity {
                         view = loginLayout;
                     }
                     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-
                     loginLayout.setVisibility(View.GONE);
                     mainLayout.setVisibility(View.VISIBLE);
                 });
