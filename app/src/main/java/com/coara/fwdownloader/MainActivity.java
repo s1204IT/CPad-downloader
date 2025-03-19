@@ -396,7 +396,7 @@ public class MainActivity extends Activity {
         executor.execute(() -> {
             HttpURLConnection conn = null;
             try {
-                URL url = new URL("https://d2.benesse.ne.jp/api");
+                URL url = new URL("https://d2-staging.benesse.ne.jp/api");
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
